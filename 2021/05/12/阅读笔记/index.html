@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+  <!-- 元数据 -->
+  <meta charset="utf-8">
+  <link rel="icon" href="">
+  <title>阅读笔记 | 7att1ce's blog</title>
+  <meta name="author" content="7att1ce" />
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telphone=no, email=no" />
+  
+    <meta name="keywords" content="" />
+  
+  <meta name="description" content="Poison Over Troubled Forwarders: A Cache Poisoning Attack Targeting DNS Forwarding Devices1 概述文中介绍了一种新型的针对DNS Forwarder也就是DNS Forwarder的缓存投毒攻击. 通过这种攻击方式, 攻击者可以向DNS Forwarder中注入任意的受害域名, 将用户指引到恶意站点, 并且可">
+<meta property="og:type" content="article">
+<meta property="og:title" content="阅读笔记">
+<meta property="og:url" content="https://7att1ce.github.io/2021/05/12/%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/">
+<meta property="og:site_name" content="7att1ce&#39;s blog">
+<meta property="og:description" content="Poison Over Troubled Forwarders: A Cache Poisoning Attack Targeting DNS Forwarding Devices1 概述文中介绍了一种新型的针对DNS Forwarder也就是DNS Forwarder的缓存投毒攻击. 通过这种攻击方式, 攻击者可以向DNS Forwarder中注入任意的受害域名, 将用户指引到恶意站点, 并且可">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://7att1ce.github.io/null">
+<meta property="article:published_time" content="2021-05-12T14:43:10.000Z">
+<meta property="article:modified_time" content="2021-05-21T01:09:44.198Z">
+<meta property="article:author" content="7att1ce">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://7att1ce.github.io/null">
+<meta name="twitter:site" content="@null">
+  
+  <!-- 站点验证相关 -->
+  
+    
+    
+    
+  
+  <!-- 样式表文件 -->
+  <link rel="stylesheet" id="kratos-css" href="/css/kratosr.min.css" type="text/css" media="all">
+  
+    <link rel="stylesheet" id="highlight-css" href="/css/highlight/night-eighties.min.css" type="text/css" media="all">
+  
+  
+  <link rel="stylesheet" id="fontawe-css" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" type="text/css" media="all">
+  <link rel="stylesheet" id="nprogress-css" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" type="text/css" media="all">
+  
+  
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+  
+  
+    <link rel="stylesheet" id="darkmode-css" href="/css/kr-dark.min.css" type="text/css" media="all">
+  
+  <!-- 不得不预先加载的一些JS文件 -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  
+    <script src="https://cdn.jsdelivr.net/npm/qrcode_js@1.0.0/qrcode.min.js"></script>
+  
+<meta name="generator" content="Hexo 5.4.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><link rel="alternate" href="/atom.xml" title="7att1ce's blog" type="application/atom+xml">
+</head>
+
+
+    <body class="custom-background">
+        <div id="kratos-wrapper">
+    <div id="kratos-page">
+        <div id="kratos-header">
+            <header id="kratos-desktop-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="nav-header">
+                        <nav id="kratos-menu-wrap">
+                            <ul id="kratos-primary-menu" class="sf-menu">
+                                
+                                    
+                                        <li><a href="/"><i class="fa fa-home"></i>首页</a></li>
+                                    
+                                
+                                    
+                                        <li><a href="/archives/"><i class="fa fa-file"></i>档案馆</a></li>
+                                    
+                                
+                                    
+                                        <li><a href="/friends/"><i class="fa fa-paw"></i>好伙伴</a></li>
+                                    
+                                
+                                    
+                                        <li>
+                                            <a><i class="fa fa-link"></i>菜鸡的音游</a>
+                                            <ul class="sub-menu">
+                                                
+                                                    
+                                                
+                                                    
+                                                        <li><a target="_blank" rel="noopener" href="https://osu.ppy.sh/users/11434675">osu!</a></li>
+                                                    
+                                                
+                                                    
+                                                        <li><a target="_blank" rel="noopener" href="https://etternaonline.com/user/7att1ce">Etterna</a></li>
+                                                    
+                                                
+                                                    
+                                                        <li><a target="_blank" rel="noopener" href="http://m.mugzone.net/accounts/user/130213">Malody</a></li>
+                                                    
+                                                
+                                                    
+                                                        <li><a target="_blank" rel="noopener" href="http://www.dream-pro.info/~lavalse/LR2IR/search.cgi?mode=mypage&playerid=140669">LR2</a></li>
+                                                    
+                                                
+                                            </ul>
+                                        </li>
+                                    
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+            <header id="kratos-mobile-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="color-logo"><a href="/">7att1ce&#39;s blog</a></div>
+                    <div class="nav-toggle">
+                        <a class="kratos-nav-toggle js-kratos-nav-toggle">
+                            <i></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <div class="kratos-start kratos-hero-2">
+            <!-- <div class="kratos-overlay"></div> -->
+            <div class="kratos-cover kratos-cover-2 text-center">
+                <div class="desc desc2 animate-box">
+                    <a href="/">
+                        <h2>7att1ce&#39;s blog</h2> <br />
+                        <span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="kratos-blog-post">
+            <div class="container">
+                <div id="main" class="row">
+                    
+
+        <section class="col-md-8">
+    <article>
+        <div class="kratos-hentry kratos-post-inner clearfix">
+            <header class="kratos-entry-header">
+                
+                    <h1 class="kratos-entry-title text-center">阅读笔记</h1>
+                
+                
+                <ul class="kratos-post-meta text-center">
+                    <li><i class="fa fa-calendar"></i> 2021-05-12</li>
+                    <li><i class="fa fa-user"></i> 作者 7att1ce</li>
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~3.52K
+                        
+                        字
+                    </li>
+                    
+                </ul>
+            </header>
+            <div class="kratos-post-content">
+                <div id="expire-alert" class="alert alert-warning hidden" role="alert">
+                    本文最后编辑于 <time datetime="1621559384198"></time> 前，其中的内容可能需要更新。
+                </div>
+                
+                <hr />
+                <h2 id="Poison-Over-Troubled-Forwarders-A-Cache-Poisoning-Attack-Targeting-DNS-Forwarding-Devices"><a href="#Poison-Over-Troubled-Forwarders-A-Cache-Poisoning-Attack-Targeting-DNS-Forwarding-Devices" class="headerlink" title="Poison Over Troubled Forwarders: A Cache Poisoning Attack Targeting DNS Forwarding Devices"></a>Poison Over Troubled Forwarders: A Cache Poisoning Attack Targeting DNS Forwarding Devices</h2><h3 id="1-概述"><a href="#1-概述" class="headerlink" title="1 概述"></a>1 概述</h3><p>文中介绍了一种新型的针对DNS Forwarder也就是DNS Forwarder的缓存投毒攻击. 通过这种攻击方式, 攻击者可以向DNS Forwarder中注入任意的受害域名, 将用户指引到恶意站点, 并且可以规避目前的缓存投毒防御措施.</p>
+<h3 id="2-DNS-Forwarder"><a href="#2-DNS-Forwarder" class="headerlink" title="2 DNS Forwarder"></a>2 DNS Forwarder</h3><p>DNS Forwarder, 即DNS转发器, 在传统的DNS解析架构中不存在DNS Forwarder, 而目前DNS Forwarder应用十分广泛.</p>
+<p>在最新的文件(RFC 8499)中, DNS Forwarder位于存根解析器与递归解析器之间. 当DNS Forwarder接收到查询请求时，它不递归地执行解析，而只是将查询转发到上游的递归解析器. 它无需对DNS客户端的查询请求进行递归解析, 只是起转发的作用; 而且其在安全性上依赖于上游的递归解析器, 不会对response进行检查, 这也是DNS Forwarder的一个关键弱点, 这个特性使得针对DNS Forwarder的缓存投毒攻击成为可能.</p>
+<h3 id="3-先前的DNS缓存中毒攻击"><a href="#3-先前的DNS缓存中毒攻击" class="headerlink" title="3 先前的DNS缓存中毒攻击"></a>3 先前的DNS缓存中毒攻击</h3><ol>
+<li>伪造攻击</li>
+<li>碎片整理攻击</li>
+</ol>
+<h3 id="4-针对DNS-Forwarder的碎片整理攻击"><a href="#4-针对DNS-Forwarder的碎片整理攻击" class="headerlink" title="4 针对DNS Forwarder的碎片整理攻击"></a>4 针对DNS Forwarder的碎片整理攻击</h3><h4 id="4-1-攻击模型概述"><a href="#4-1-攻击模型概述" class="headerlink" title="4.1 攻击模型概述"></a>4.1 攻击模型概述</h4><p>攻击模型: 假设攻击者与DNS Forwarder位于同一局域网中. 攻击者向被自己控制的域进行缓存中毒攻击, 来验证DNS Forwarder是不会进行响应包的安全校验的, 它对响应包的安全性判断完全依赖于它上游的递归解析器.</p>
+<p>攻击流程: 首先要探测IPID. 然后构造数据包的第二个分片, 包含一条伪造的A记录, 将IP地址指向攻击者的IP地址. 接着, 攻击者查询a.attacker.com的IP地址. 最后, 攻击者控制的权威域名解析器会在响应包中插入很多CNAME记录(CNAME链), 导致相应包会被递归解析器分片转发. 当第一片数据包发送到DNS Forwarder时, 会和之前构造的第二个分片组合. 由于DNS Forwarder不会不会对数据包进行检查, 并且第二个分片中不包含DNS会话标识和端口号等元数据, 使得攻击变得容易且难以检查.</p>
+<h4 id="4-2-DNS响应碎片构造"><a href="#4-2-DNS响应碎片构造" class="headerlink" title="4.2 DNS响应碎片构造"></a>4.2 DNS响应碎片构造</h4><p>主要构造方法: 构造很多的CNAME记录(CNAME链)，例如:</p>
+<blockquote>
+<p>————-第一个分片————-<br>a.attacker.com CNAME b.attacker.com<br>b.attacker.com CNAME c.attacker.com<br>c.attacker.com CNAME d.attacker.com<br>…<br>————-第二个分片————-<br>x.attacker.com CNAME y.attacker.com<br>y.attacker.com CNAME z.attacker.com<br>z.attacker.com A x.x.x.x</p>
+</blockquote>
+<p>攻击者构造的第二个分片:</p>
+<blockquote>
+<p>x.attacker.com CNAME y.attacker.com<br>y.attacker.com CNAME victim.com<br>victim.com A a.t.k.r</p>
+</blockquote>
+<p>构造的响应包应该大于1500字节，保证在递归解析器被分片.<br>对于上游的递归解析器来说, 它们看到的是来自权威域名解析器的超大dns响应包, 经过校验并不违反bailiwick规则, 所以递归解析器就将这个超大响应包以分片的方式转发给DNS Forwarder了.<br>使用这种超大DNS数据包响应需要攻击场景中的所有DNS服务器都支持DNS扩展名机制, 在DNS数据包头部中添加了一个OPT字段来标记该数据包是否携带EDNS选项.</p>
+<h4 id="4-3-构造欺骗分片"><a href="#4-3-构造欺骗分片" class="headerlink" title="4.3 构造欺骗分片"></a>4.3 构造欺骗分片</h4><p>虽然构造第二个分片无需预测DNS和UDP报头中的端口号和会话标识等元数据，但还需预测IPID, 这样才能够与第一个分片成功组合.<br>目前一共有三种IPID分配方法:</p>
+<ol>
+<li>全局IPID计数器<br>每发送一个数据包就增加一个, 这是高度可预测的.</li>
+<li>基于哈希的IPID计数器<br>首先使用哈希函数将输出数据包映射到IPID计数器阵列中的一个, 然后将选定的计数器随机增加一个值, 该值从1到自上次使用相同计数器的数据包传输以来的系统节拍数(通常为毫秒)之间的均匀分布中选择. 如果两个探测器在时间上足够接近, 那么响应的IPID增量是非常可预测的. 哈希函数根据发送数据包的源和目标IP地址确定使用哪个IPID计数器(因此, 相同的源和目标IP对将始终导致选择相同的IPID计数器).</li>
+<li>随机IPID分配<br>在本论文的攻击中, 攻击者可以首先探测上游解析器的当前IPID值, 并使用一个或多个预测的IPID来放置欺骗的第2个片段. 探测响应和第一个片段都被发送到局域网的”NAT-ed”公共地址, 因此它们保证在上游解析器上使用相同的IPID计数器. 当攻击者启动整个数据包序列并控制这些数据包的定时时, 它可以确保初始IPID和后一个(在解析器的响应中)之间的间隔足够小, 因此是可预测的(因为它们在时间上是很接近的, 例如相隔几毫秒).</li>
+</ol>
+<h4 id="4-4-攻击条件"><a href="#4-4-攻击条件" class="headerlink" title="4.4 攻击条件"></a>4.4 攻击条件</h4><p>成功实施攻击的必要条件为EDNS(0)的支持, 不截断DNS响应, 没有DNS响应的验证以及DNS缓存的记录.</p>
+<h3 id="5-易受攻击的软件"><a href="#5-易受攻击的软件" class="headerlink" title="5 易受攻击的软件"></a>5 易受攻击的软件</h3><h3 id="6-对问题的反思"><a href="#6-对问题的反思" class="headerlink" title="6 对问题的反思"></a>6 对问题的反思</h3><h3 id="7-攻击模型的扩大-针对LAN-以及缓解措施"><a href="#7-攻击模型的扩大-针对LAN-以及缓解措施" class="headerlink" title="7 攻击模型的扩大(针对LAN)以及缓解措施"></a>7 攻击模型的扩大(针对LAN)以及缓解措施</h3><h2 id="DNS-Cache-Poisoning-Attack-Reloaded-Revolutions-with-Side-Channels"><a href="#DNS-Cache-Poisoning-Attack-Reloaded-Revolutions-with-Side-Channels" class="headerlink" title="DNS Cache Poisoning Attack Reloaded: Revolutions with Side Channels"></a>DNS Cache Poisoning Attack Reloaded: Revolutions with Side Channels</h2><h3 id="1-攻击原理"><a href="#1-攻击原理" class="headerlink" title="1 攻击原理"></a>1 攻击原理</h3><p>在2008年的Kaminsky的经典的缓存中毒攻击中, DNS数据包中的源端口是固定的(53端口), 因此攻击者只需要爆破TxID即可, TxID为16bit, 即<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: 0" xmlns="http://www.w3.org/2000/svg" width="2.919ex" height="1.887ex" role="img" focusable="false" viewBox="0 -833.9 1290.1 833.9"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msup"><g data-mml-node="mn"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="36" d="M42 313Q42 476 123 571T303 666Q372 666 402 630T432 550Q432 525 418 510T379 495Q356 495 341 509T326 548Q326 592 373 601Q351 623 311 626Q240 626 194 566Q147 500 147 364L148 360Q153 366 156 373Q197 433 263 433H267Q313 433 348 414Q372 400 396 374T435 317Q456 268 456 210V192Q456 169 451 149Q440 90 387 34T253 -22Q225 -22 199 -14T143 16T92 75T56 172T42 313ZM257 397Q227 397 205 380T171 335T154 278T148 216Q148 133 160 97T198 39Q222 21 251 21Q302 21 329 59Q342 77 347 104T352 209Q352 289 347 316T329 361Q302 397 257 397Z" transform="translate(500,0)"></path></g></g></g></g></g></svg></mjx-container>种可能.</p>
+<p>不过从那时起, 为了增加防御性, DNS解析器采取了源端口随机化, 即若仍使用上述方法攻击, 则需要同时爆破源端口和TxID两个字段, 两个字段都是16bit, 即一共有<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: 0" xmlns="http://www.w3.org/2000/svg" width="2.919ex" height="1.887ex" role="img" focusable="false" viewBox="0 -833.9 1290.1 833.9"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msup"><g data-mml-node="mn"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mn"><path data-c="33" d="M127 463Q100 463 85 480T69 524Q69 579 117 622T233 665Q268 665 277 664Q351 652 390 611T430 522Q430 470 396 421T302 350L299 348Q299 347 308 345T337 336T375 315Q457 262 457 175Q457 96 395 37T238 -22Q158 -22 100 21T42 130Q42 158 60 175T105 193Q133 193 151 175T169 130Q169 119 166 110T159 94T148 82T136 74T126 70T118 67L114 66Q165 21 238 21Q293 21 321 74Q338 107 338 175V195Q338 290 274 322Q259 328 213 329L171 330L168 332Q166 335 166 348Q166 366 174 366Q202 366 232 371Q266 376 294 413T322 525V533Q322 590 287 612Q265 626 240 626Q208 626 181 615T143 592T132 580H135Q138 579 143 578T153 573T165 566T175 555T183 540T186 520Q186 498 172 481T127 463Z"></path><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z" transform="translate(500,0)"></path></g></g></g></g></g></svg></mjx-container>种可能, 这在目前是不太可能实现的.</p>
+<p>为了解决上述问题(主要是源端口随机化问题), 作者提出了一种分治思想, 先通过ICMP侧信道探测开放的端口, 后猜测相应TxID, 一共<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.186ex" xmlns="http://www.w3.org/2000/svg" width="8.603ex" height="2.072ex" role="img" focusable="false" viewBox="0 -833.9 3802.7 915.9"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msup"><g data-mml-node="mn"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="36" d="M42 313Q42 476 123 571T303 666Q372 666 402 630T432 550Q432 525 418 510T379 495Q356 495 341 509T326 548Q326 592 373 601Q351 623 311 626Q240 626 194 566Q147 500 147 364L148 360Q153 366 156 373Q197 433 263 433H267Q313 433 348 414Q372 400 396 374T435 317Q456 268 456 210V192Q456 169 451 149Q440 90 387 34T253 -22Q225 -22 199 -14T143 16T92 75T56 172T42 313ZM257 397Q227 397 205 380T171 335T154 278T148 216Q148 133 160 97T198 39Q222 21 251 21Q302 21 329 59Q342 77 347 104T352 209Q352 289 347 316T329 361Q302 397 257 397Z" transform="translate(500,0)"></path></g></g></g><g data-mml-node="mo" transform="translate(1512.3,0)"><path data-c="2B" d="M56 237T56 250T70 270H369V420L370 570Q380 583 389 583Q402 583 409 568V270H707Q722 262 722 250T707 230H409V-68Q401 -82 391 -82H389H387Q375 -82 369 -68V230H70Q56 237 56 250Z"></path></g><g data-mml-node="msup" transform="translate(2512.6,0)"><g data-mml-node="mn"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g><g data-mml-node="TeXAtom" transform="translate(533,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="36" d="M42 313Q42 476 123 571T303 666Q372 666 402 630T432 550Q432 525 418 510T379 495Q356 495 341 509T326 548Q326 592 373 601Q351 623 311 626Q240 626 194 566Q147 500 147 364L148 360Q153 366 156 373Q197 433 263 433H267Q313 433 348 414Q372 400 396 374T435 317Q456 268 456 210V192Q456 169 451 149Q440 90 387 34T253 -22Q225 -22 199 -14T143 16T92 75T56 172T42 313ZM257 397Q227 397 205 380T171 335T154 278T148 216Q148 133 160 97T198 39Q222 21 251 21Q302 21 329 59Q342 77 347 104T352 209Q352 289 347 316T329 361Q302 397 257 397Z" transform="translate(500,0)"></path></g></g></g></g></g></svg></mjx-container>种可能. 同时，相应的扩大攻击窗口时间, 使得这种攻击方式更加容易.</p>
+<h3 id="2-攻击概述"><a href="#2-攻击概述" class="headerlink" title="2 攻击概述"></a>2 攻击概述</h3><p>攻击模型: 主要目标是DNS转发器以及DNS解析器. 假设攻击者不能窃取DNS Forwarder和DNS Resolver之间的流量, 但有IP欺骗能力, 即为一个偏离信道的攻击者. 攻击者还应与受害者处于同一局域网中. 此外, 攻击者需要控制能够从转发器或解析器中触发请求的机器.</p>
+<p>攻击流程: 首先从触发一个攻击开始发送DNS查询, 然后是推断源端口以及扩大攻击窗口. 利用侧通道来扫描和发现用于DNS查询的端口, 同时针对不同的转发器和解析器攻击，可大大扩展攻击窗口.</p>
+<h3 id="4-推断源端口"><a href="#4-推断源端口" class="headerlink" title="4 推断源端口"></a>4 推断源端口</h3><p>对于ICMP限制，有三种种克服方法: 攻击者有多个IP或者有IPv6, 通过DHCP请求多个地址和借助IP欺骗. 同时通过观察源码发现, ICMP速率限制是在IP速率限制之前进行验证的. 所以, 即使最后一个IP只返回一个ICMP响应包.</p>
+<p>分治方法主要是二分法查找端口. 在每轮的二分查找中，总是先探寻左半部分. 假设解析器的ICMP速率限制为 50/20ms, 攻击者通过伪造权威域名服务器的IP, 向解析器发送50个探测UDP报文, 那么攻击者以自己的IP再向解析器发送一个UDP报文, 如果没收到任何ICMP回复, 说明已达到ICMP速率限制, 可进行下一个20ms的探测, 不断循环. 如果此时收到回复, 说明至少有一个端口是开放的, 则继续搜索左半部分, 否则搜索右半部分.</p>
+<h3 id="5-扩大攻击窗口"><a href="#5-扩大攻击窗口" class="headerlink" title="5 扩大攻击窗口"></a>5 扩大攻击窗口</h3><p>这里主要讨论了扩大DNS转发器和解析器的攻击窗口</p>
+<p>对于DNS转发器，可以通过攻击者先查询自己的域地址, 而名称服务器配置为无响应, 或者让攻击者拥有权威域名服务器并以缓慢的速度响应CNAME记录, 以增加等待时间. 而对于DNS解析器, 可以通过发送大量的DNS查询来淹没权威域名服务器, 类似于攻击者伪造解析器, 发送大量DNS query, 高于配置限制的速率(服务器上配置的RRL), 会权威域名服务器不发送响应, 创建足够高的丢失率.</p>
+<h3 id="6-实际攻击时应考虑的问题"><a href="#6-实际攻击时应考虑的问题" class="headerlink" title="6 实际攻击时应考虑的问题"></a>6 实际攻击时应考虑的问题</h3><p>对于解析器缓冲区而言, 可能已经拥有某条记录, 但攻击者不得不等待这条记录消失之后, 再发动攻击, 即TTL表示这条记录的生存时间.</p>
+<h3 id="7-防御"><a href="#7-防御" class="headerlink" title="7 防御"></a>7 防御</h3>
+            </div>
+            
+                <div class="kratos-copyright text-center clearfix">
+                    <h5>本作品采用 <a rel="license nofollow" target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/">知识共享署名-相同方式共享 4.0 国际许可协议</a> 进行许可</h5>
+                </div>
+            
+            <footer class="kratos-entry-footer clearfix">
+                
+                    <div class="post-like-donate text-center clearfix" id="post-like-donate">
+                    
+                    
+                        <a class="share" href="javascript:;"><i class="fa fa-share-alt"></i> 分享</a>
+                        <div class="share-wrap" style="display: none;">
+    <div class="share-group">
+        <a href="javascript:;" class="share-plain qq" onclick="share('qq');" rel="nofollow">
+            <div class="icon-wrap">
+                <i class="fa fa-qq"></i>
+            </div>
+        </a>
+        <a href="javascript:;" class="share-plain qzone" onclick="share('qzone');" rel="nofollow">
+            <div class="icon-wrap">
+                <i class="fa fa-star"></i>
+            </div>
+        </a>
+        <a href="javascript:;" class="share-plain weixin pop style-plain" rel="nofollow">
+            <div class="icon-wrap">
+                <i class="fa fa-weixin"></i>
+            </div>
+            <div class="share-int">
+                <div class="qrcode" id="wechat-qr"></div>
+                <p>打开微信“扫一扫”，打开网页后点击屏幕右上角分享按钮</p>
+            </div>
+        </a>
+        <a href="javascript:;" class="share-plain weibo" onclick="share('weibo');" rel="nofollow">
+            <div class="icon-wrap">
+                <i class="fa fa-weibo"></i>
+            </div>
+        </a>
+        <a href="javascript:;" class="share-plain facebook style-plain" onclick="share('facebook');" rel="nofollow">
+            <div class="icon-wrap">
+                <i class="fa fa-facebook"></i>
+            </div>
+        </a>
+        <a href="javascript:;" class="share-plain twitter style-plain" onclick="share('twitter');" rel="nofollow">
+            <div class="icon-wrap">
+                <i class="fa fa-twitter"></i>
+            </div>
+        </a>
+    </div>
+    <script type="text/javascript">
+        $(()=>{
+            new QRCode("wechat-qr", {
+                text: "https://7att1ce.github.io/2021/05/12/%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/",
+                width: 150,
+                height: 150,
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        });
+        function share(dest) {
+            const qqBase        = "https://connect.qq.com/widget/shareqq/index.html?";
+            const weiboBase     = "https://service.weibo.com/share/share.php?";
+            const qzoneBase     = "https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?";
+            const facebookBase  = "https://www.facebook.com/sharer/sharer.php?";
+            const twitterBase   = "https://twitter.com/intent/tweet?";
+            const hostUrl       = "https://7att1ce.github.io/2021/05/12/%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/";
+            const title         = "「阅读笔记」";
+            const excerpt       = `Poison Over Troubled Forwarders: A Cache Poisoning Attack Targeting DNS Forwarding Devices1 概述文中介绍了一种新型的针对DNS Forward...`;
+            let _URL;
+            switch (dest) {
+                case "qq"       : _URL = qqBase+"url="+hostUrl+"&title="+title+"&desc=&summary="+excerpt+"&site=cxpy";     break;
+                case "weibo"    : _URL = weiboBase+"url="+hostUrl+"&title="+title+excerpt;                                 break;
+                case "qzone"    : _URL = qzoneBase+"url="+hostUrl+"&title="+title+"&desc=&summary="+excerpt+"&site=cxpy";  break;
+                case "facebook" : _URL = facebookBase+"u="+hostUrl;                                                        break;
+                case "twitter"  : _URL = twitterBase+"text="+title+excerpt+"&url="+hostUrl;                                break;
+            }
+            window.open(_URL);
+        };
+    </script>
+</div>
+                    
+                    </div>
+                
+                <div class="footer-tag clearfix">
+                    <div class="pull-left">
+                    <i class="fa fa-tags"></i>
+                        
+                    </div>
+                    <div class="pull-date">
+                    <span>最后编辑：2021-05-21</span>
+                    </div>
+                </div>
+            </footer>
+        </div>
+        
+            <nav class="navigation post-navigation clearfix" role="navigation">
+                
+                <div class="nav-previous clearfix">
+                    <a title=" 毛概" href="/2021/03/15/毛概/">&lt; 上一篇</a>
+                </div>
+                
+                
+                <div class="nav-next clearfix">
+                    <a title=" 计算机组成原理" href="/2021/05/18/计算机组成原理/">下一篇 &gt;</a>
+                </div>
+                
+            </nav>
+        
+        
+    </article>
+</section>
+
+                
+            
+
+<section id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+    <!-- 文章和页面根据splitter来分割，没有的话就从头开始设置为sticky -->
+    
+    
+                <aside id="krw-about" class="widget widget-kratos-about clearfix">
+    <div class="photo-background"></div>
+    <div class="photo-wrapper clearfix">
+        <div class="photo-wrapper-tip text-center">
+            <img class="about-photo" src="/images/avatar.webp" />
+        </div>
+    </div>
+    <div class="textwidget">
+        <p class="text-center"></p>
+    </div>
+</aside>
+            
+                    <div class="sticky-area">
+                
+                
+
+            
+                
+            
+                
+  <aside id="krw-posts" class="widget widget-kratos-posts">
+  <h4 class="widget-title"><i class="fa fa-file"></i>最新文章</h4>
+  <div class="tab-content">
+      <ul class="list-group">
+        
+        
+          
+          
+            <a class="list-group-item" href="/2021/05/25/%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AE%9E%E9%AA%8C/"><i class="fa  fa-book"></i> 数据库实验</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2021/05/25/%E7%AE%97%E6%B3%95%E5%AE%9E%E9%AA%8C/"><i class="fa  fa-book"></i> 算法实验</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2021/05/24/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F%E6%A6%82%E8%AE%BA/"><i class="fa  fa-book"></i> 数据库系统概论</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2021/05/21/WP%E6%94%B6%E9%9B%86/"><i class="fa  fa-book"></i> WP收集</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2021/05/20/%E6%B4%A5%E9%97%A8%E6%9D%AF-2021-misc-wp/"><i class="fa  fa-book"></i> 津门杯 2021 misc wp</a>
+            
+          
+        
+          
+            
+          
+            
+          
+            
+          
+            
+      </ul>
+  </div>
+  </aside>
+
+            
+    </div>
+</section>
+        
+        </div>
+    </div>
+</div>
+<footer>
+    <div id="footer"  >
+        <div class="kr-tool text-center">
+            <div class="tool">
+                
+                    <div class="box search-box">
+                        <a href="/search/">
+                            <span class="fa fa-search"></span>
+                        </a>
+                    </div>
+                
+                
+                    <div class="box theme-box" id="darkmode-switch">
+                        <span class="fa fa-adjust"></span>
+                    </div>
+                
+                
+            </div>
+            <div class="box gotop-box">
+                <span class="fa fa-chevron-up"></span>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3 footer-list text-center">
+                    <ul class="kratos-social-icons">
+                        
+                        <li><a href="mailto:kaaazzze@gmail.com"><i class="fa fa-envelope"></i></a></li>
+                        
+                        
+                        
+                        
+                        <li><a target="_blank" rel="me" href="https://space.bilibili.com/182459728?from=search&seid=14014427907094359192"><i class="fa fa fa-share-alt-square"></i></a></li>
+                        <li><a target="_blank" rel="nofollow" href="https://github.com/7att1ce"><i class="fa fa-github"></i></a></li>
+                        
+                    </ul>
+                    <ul class="kratos-copyright">
+                        <div>
+                            <li>&copy; 2021 7att1ce's blog 版权所有.</li>
+                            <li>本站已运行<span id="span_dt">Loading...</span></li>
+                        </div>
+                        <div>
+                            <li>Theme <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a></li>
+                            <li>Site built with&nbsp;<i class="fa fa-heart throb" style="color:#d43f57"></i>&nbsp;by 7att1ce.</li>
+                        </div>
+                        <div>
+                            <li>Powered by <a href="https://hexo.io" target="_blank" rel="nofollow">Hexo</a></li>
+                            <li>Hosted on <a href="https://github.io" target="_blank">Github Pages</a></li>
+                        </div>
+                        <div>
+                            
+                            
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+
+        <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.4/dist/js/bootstrap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.js"></script>
+<script>const notMobile = (!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)));</script>
+
+    <div>
+        <canvas id="snow"></canvas>
+        <script async type="text/javascript" src="/js/snow.min.js"></script>
+    </div>
+
+<script async src="/js/candy.min.js"></script>
+
+
+    <script defer src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script defer src="/js/kratosr.min.js"></script>
+<script defer src="/js/pjax.min.js"></script>
+
+
+    <script defer src="/js/kr-dark.min.js"></script>
+
+
+
+<!-- Extra support for third-party plguins  -->
+
+
+    </body>
+</html>
